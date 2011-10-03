@@ -9,7 +9,7 @@ NAME = "SoundCloud"
 ART = 'art-default.jpg'
 ICON = 'icon-default.png'
 
-API_HOST = "api.sandbox-soundcloud.com"
+API_HOST = "api.soundcloud.com"
 CLIENT_ID = "4f6c5882fe9cfc80ebf7ff815cd8b383"
 CLIENT_SECRET = "b17b970b7a0db3729a1965d2a902efd0"
 
@@ -31,17 +31,38 @@ def Start():
     
     DirectoryObject.thumb = R(ICON)
     DirectoryObject.art = R(ART)
-    VideoClipObject.thumb = R(ICON)
-    VideoClipObject.art = R(ART)
+    TrackObject.thumb = R(ICON)
 
 ####################################################################################################
 
 def MainMenu():
     
-    #oauth_authenticator = scapi.authentication.OAuthAuthenticator(CLIENT_ID)
-    #root = scapi.Scope(scapi.ApiConnector(host = API_HOST, authenticator = oauth_authenticator))
-    #user = root.users(53622)
-    #Log("IABI: " + user)
-    
     oc = ObjectContainer(view_group="List", title1 = NAME)
+    oc.add(DirectoryObject(key = Callback(List, title = 'Hot', order = 'hotness'), title = 'Hot'))
+    oc.add(DirectoryObject(key = Callback(List, title = 'Latest', order = 'created_at'), title = 'Latest'))
+    return oc
+
+####################################################################################################
+
+def List(title, order):
+
+    oc = ObjectContainer(view_group="InfoList", title1 = title)
+    oauth_authenticator = scapi.authentication.OAuthAuthenticator(CLIENT_ID)
+    root = scapi.Scope(scapi.ApiConnector(host = API_HOST, authenticator = oauth_authenticator))
+    for track in root.tracks(params = {'filter': 'streamable', 'order': order, 'limit': 5}):
+        track_url = track.stream_url + "?client_id=" + CLIENT_ID
+        oc.add(TrackObject(
+            rating_key = track_url,
+            title = track.title,
+            thumb = track.artwork_url,
+            duration = track.duration,
+            genres = [ track.genre ],
+            items = [
+                MediaObject(
+                    audio_codec = AudioCodec.MP3,
+                    parts = [PartObject(key = track_url)]
+                )
+            ]
+        ))
+
     return oc
