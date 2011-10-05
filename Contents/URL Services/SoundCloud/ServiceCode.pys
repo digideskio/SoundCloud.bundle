@@ -1,0 +1,21 @@
+CLIENT_ID = "4f6c5882fe9cfc80ebf7ff815cd8b383"
+
+####################################################################################################
+
+def MetadataObjectForURL(url):
+    try:
+
+        return TrackObject()
+
+    except:
+        Log.Exception("An error occurred while attempting to retrieve the required meta data.")
+
+####################################################################################################
+
+def MediaObjectsForURL(url):
+    return [
+        MediaObject(
+            audio_codec = AudioCodec.MP3,
+            parts = [PartObject(key = url + "?client_id=" + CLIENT_ID)]
+          )
+    ]

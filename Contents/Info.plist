@@ -24,5 +24,15 @@
 	<string>AlwaysOn</string>
 	<key>PlexPluginCodePolicy</key>
 	<string>Elevated</string>
+	<key>PlexURLServices</key>
+	<dict>
+		<key>SoundCloud</key>
+		<dict>
+			<key>URLPattern</key>
+			<string>http://api.soundcloud.com/tracks/[0-9]+/stream</string>
+			<key>LinkedPlugin</key>
+			<string>com.plexapp.plugins.soundcloud</string>
+		</dict>
+    </dict>
 </dict>
 </plist>

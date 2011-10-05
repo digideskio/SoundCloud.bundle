@@ -50,19 +50,12 @@ def List(title, order):
     oauth_authenticator = scapi.authentication.OAuthAuthenticator(CLIENT_ID)
     root = scapi.Scope(scapi.ApiConnector(host = API_HOST, authenticator = oauth_authenticator))
     for track in root.tracks(params = {'filter': 'streamable', 'order': order, 'limit': 5}):
-        track_url = track.stream_url + "?client_id=" + CLIENT_ID
+        track_url = track.stream_url
         oc.add(TrackObject(
-            rating_key = track_url,
+            url = track_url,
             title = track.title,
             thumb = track.artwork_url,
             duration = track.duration,
-            genres = [ track.genre ],
-            items = [
-                MediaObject(
-                    audio_codec = AudioCodec.MP3,
-                    parts = [PartObject(key = track_url)]
-                )
-            ]
-        ))
+            genres = [ track.genre ]))
 
     return oc
