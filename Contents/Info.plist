@@ -34,5 +34,10 @@
 			<string>com.plexapp.plugins.soundcloud</string>
 		</dict>
     </dict>
+    <key>PlexSearchServices</key>
+	<dict>
+	   <key>SoundCloud</key>
+	   <string>com.plexapp.plugins.soundcloud</string>
+	</dict>
 </dict>
 </plist>

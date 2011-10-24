@@ -1,0 +1,38 @@
+import scapi
+
+CLIENT_ID = "4f6c5882fe9cfc80ebf7ff815cd8b383"
+
+ObjectContainer.art = R('art-default.jpg')
+
+def Search(query):
+
+  oauth_authenticator = scapi.authentication.OAuthAuthenticator(CLIENT_ID)
+  root = scapi.Scope(scapi.ApiConnector(host = API_HOST, authenticator = oauth_authenticator))
+
+  # Create a container to hold the results
+  c = ObjectContainer()
+  for track in root.tracks(params = {"filter": "streamable", "q": query, "limit": "25"}): 
+    try:
+
+      # For some reason, although we've asked for only 'streamable' content, we still sometimes find
+      # items which do not have a stream_url. We need to catch these and simply ignore them...
+      if track.streamable == False:
+        continue
+
+      # Request larger thumbnails. As documented by the API, we simply replace the default 'large'
+      # with the one that we actually want.
+      thumb = track.artwork_url
+      if thumb != None:
+        thumb = thumb.replace('large','t500x500')
+
+      # Add details of the located video clip
+      c.add(VideoClipObject(
+        url = track.stream_url,
+        title = track.title,
+        thumb = track.artwork_url,
+        duration = int(track.duration)))
+                
+    except:
+      Log.Exception("Exception adding video result")
+      
+  return c
