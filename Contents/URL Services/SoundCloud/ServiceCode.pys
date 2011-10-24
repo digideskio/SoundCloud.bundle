@@ -15,7 +15,14 @@ def MetadataObjectForURL(url):
 def MediaObjectsForURL(url):
     return [
         MediaObject(
+            bitrate = '128',
             audio_codec = AudioCodec.MP3,
-            parts = [PartObject(key = url + "?client_id=" + CLIENT_ID)]
+            container = 'mp3',
+            parts = [PartObject(key = Callback(PlayTrack, url = url))]
           )
     ]
+
+####################################################################################################
+
+def PlayTrack(url):
+    return Redirect(url + "?client_id=" + CLIENT_ID)

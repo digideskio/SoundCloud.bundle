@@ -37,7 +37,7 @@ def Start():
 
 def MainMenu():
     
-    oc = ObjectContainer(view_group="List", title1 = NAME)
+    oc = ObjectContainer(title1 = NAME)
     oc.add(DirectoryObject(key = Callback(List, title = 'Hot', order = 'hotness'), title = 'Hot'))
     oc.add(DirectoryObject(key = Callback(List, title = 'Latest', order = 'created_at'), title = 'Latest'))
     return oc
@@ -46,16 +46,22 @@ def MainMenu():
 
 def List(title, order):
 
-    oc = ObjectContainer(view_group="InfoList", title1 = title)
+    oc = ObjectContainer(view_group = "InfoList", title2 = title)
     oauth_authenticator = scapi.authentication.OAuthAuthenticator(CLIENT_ID)
     root = scapi.Scope(scapi.ApiConnector(host = API_HOST, authenticator = oauth_authenticator))
-    for track in root.tracks(params = {'filter': 'streamable', 'order': order, 'limit': 5}):
-        track_url = track.stream_url
+    for track in root.tracks(params = {'filter': 'streamable', 'order': order, 'limit': 25}):
+        
+        if track.streamable == False:
+            continue
+        
+        thumb = track.artwork_url
+        if thumb != None:
+           thumb = thumb.replace('large','t500x500')
+        
         oc.add(TrackObject(
-            url = track_url,
+            url = track.stream_url,
             title = track.title,
             thumb = track.artwork_url,
-            duration = track.duration,
-            genres = [ track.genre ]))
+            duration = int(track.duration)))
 
     return oc
