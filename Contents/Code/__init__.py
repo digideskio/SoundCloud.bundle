@@ -67,7 +67,7 @@ def List(title, order):
         oc.add(TrackObject(
             url = track.stream_url,
             title = track.title,
-            thumb = track.artwork_url,
+            thumb = thumb,
             duration = int(track.duration)))
 
     return oc
@@ -95,7 +95,7 @@ def Search(query):
         oc.add(TrackObject(
             url = track.stream_url,
             title = track.title,
-            thumb = track.artwork_url,
+            thumb = thumb,
             duration = int(track.duration)))
     
     return oc
