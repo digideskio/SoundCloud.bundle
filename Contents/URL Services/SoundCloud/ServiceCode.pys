@@ -18,7 +18,7 @@ def MediaObjectsForURL(url):
             bitrate = '128',
             audio_codec = AudioCodec.MP3,
             container = 'mp3',
-            parts = [PartObject(key = Callback(PlayTrack, url = url))]
+            parts = [PartObject(key = Callback(PlayTrack, url = url, ext = ".mp3"))]
           )
     ]
 
