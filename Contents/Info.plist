@@ -32,6 +32,11 @@
 			<string>http://api.soundcloud.com/tracks/[0-9]+/stream</string>
 			<key>LinkedPlugin</key>
 			<string>com.plexapp.plugins.soundcloud</string>
+			<key>TestURLs</key>
+			<array>
+                <string>http://api.soundcloud.com/tracks/33168063/stream</string>
+                <string>http://api.soundcloud.com/tracks/33168063/stream</string>
+			</array>
 		</dict>
     </dict>
 </dict>
