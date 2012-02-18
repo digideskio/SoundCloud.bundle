@@ -20,6 +20,8 @@
 	<string>2</string>
 	<key>PlexPluginMode</key>
 	<string>AlwaysOn</string>
+	<key>PlexClientPlatforms</key>
+	<string>*</string>
 	<key>PlexPluginCodePolicy</key>
 	<string>Elevated</string>
 	<key>PlexURLServices</key>
