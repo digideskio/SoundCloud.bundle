@@ -1,20 +1,28 @@
-import re
+ART = 'art-default.jpg'
 
 CLIENT_ID = "4f6c5882fe9cfc80ebf7ff815cd8b383"
 
 TRACK_DETAILS_URL = 'http://api.soundcloud.com/tracks.json?client_id=4f6c5882fe9cfc80ebf7ff815cd8b383&ids=%s'
 
+TRACK_ID = Regex(".+/tracks/(?P<id>[0-9]+)/.+")
+
 ####################################################################################################
 
 def MetadataObjectForURL(url):
 
-    track_id = re.match(".+/tracks/(?P<id>[0-9]+)/.+", url).groupdict()['id']
-    details = JSON.ObjectFromURL(TRACK_DETAILS_URL % track_id)[0]
+    track_id = TRACK_ID.match(url).groupdict()['id']
+    track = JSON.ObjectFromURL(TRACK_DETAILS_URL % track_id)[0]
+
+    # Construct a list of thumbnails, in expected size order, largest first
+    thumb = track['artwork_url']
+    thumbs = [thumb.replace('large', 'original'), 
+              thumb.replace('large', 't500x500'),
+              thumb]
 
     return TrackObject(
-        title = details['title'],
-        thumb = details['artwork_url'].replace('large','original'),
-        duration = int(details['duration']))
+        title = track['title'],
+        thumb = Resource.ContentsOfURLWithFallback(url = thumbs, fallback = ICON),
+        duration = int(track['duration']))
 
 ####################################################################################################
 

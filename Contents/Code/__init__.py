@@ -1,11 +1,5 @@
-import scapi
-
-####################################################################################################
-
 MUSIC_PREFIX = "/music/soundcloud"
-
 NAME = "SoundCloud"
-
 ART = 'art-default.jpg'
 ICON = 'icon-default.png'
 ICON_SEARCH = 'icon-search.png'
@@ -14,14 +8,20 @@ API_HOST = "api.soundcloud.com"
 CLIENT_ID = "4f6c5882fe9cfc80ebf7ff815cd8b383"
 CLIENT_SECRET = "b17b970b7a0db3729a1965d2a902efd0"
 
+TRACKS_URL = 'http://api.soundcloud.com/tracks.json?client_id=%s&filter=streamable&offset=%d&limit=30'
+
 ####################################################################################################
 
+# This function is initially called by the PMS framework to initialize the plugin. This includes
+# setting up the Plugin static instance along with the displayed artwork.
 def Start():
-    
+
+    # Initialize the plugin
     Plugin.AddPrefixHandler(MUSIC_PREFIX, MainMenu, NAME, ICON, ART)
     Plugin.AddViewGroup("List", viewMode = "List", mediaType = "items")
     Plugin.AddViewGroup("InfoList", viewMode = "InfoList", mediaType = "items")
 
+    # Setup the artwork associated with the plugin
     ObjectContainer.art = R(ART)
     ObjectContainer.title1 = NAME
     ObjectContainer.view_group = "List"
@@ -42,7 +42,7 @@ def MainMenu():
 
 ####################################################################################################
 
-def Search(query):
+def Search(query = 'music'):
     return ProcessRequest(title = query, params = {'q': query})
 
 ####################################################################################################
@@ -50,32 +50,44 @@ def Search(query):
 def ProcessRequest(title, params, offset = 0):
     oc = ObjectContainer(view_group = "InfoList", title2 = title)
 
-    params['filter'] = 'streamable'
-    params['offset'] = str(offset)
-    params['limit'] = 25
+    # Construct a suitable track URL request...
+    request_url = TRACKS_URL % (CLIENT_ID, offset)
+    for param, value in params.items():
+        request_url = request_url + ('&%s=%s' % (param, value))
 
-    oauth_authenticator = scapi.authentication.OAuthAuthenticator(CLIENT_ID)
-    root = scapi.Scope(scapi.ApiConnector(host = API_HOST, authenticator = oauth_authenticator))
-    for track in root.tracks(params = params):
+    request = JSON.ObjectFromURL(request_url, cacheTime = 0)
+
+    # It's possible that the request has caused an error to occur. This is easily producible, e.g. if
+    # the user searches for something like 'the'. Unfortunately, the API doesn't give us any way to 
+    # detect this, except for a single 503 - Service Unavailable erro. This can be seen in the following
+    # url: http://api.soundcloud.com/tracks.json?client_id=4f6c5882fe9cfc80ebf7ff815cd8b383&q=the
+    if 'errors' in request and len(request['errors'] > 0) and len(request) == 1:
+        return MessageContainer("Error", "There are no available items...")
+
+    for track in request:
 
         # For some reason, although we've asked for only 'streamable' content, we still sometimes find
         # items which do not have a stream_url. We need to catch these and simply ignore them...
-        if track.streamable == False:
+        if track['streamable'] == False:
             continue
 
-        # Request larger thumbnails. As documented by the API, we simply replace the default 'large'
-        # with the one that we actually want.
-        thumb = track.artwork_url
-        if thumb != None:
-           thumb = thumb.replace('large','original')
+        # Construct a list of thumbnails, in expected size order, largest first
+        thumb = R(ICON)
+        if track['artwork_url'] != None:
+            original_thumb = track['artwork_url']
+            ordered_thumbs = [thumb.replace('large', 'original'), 
+                              thumb.replace('large', 't500x500'),
+                              original_thumb]
+            thumb = Resource.ContentsOfURLWithFallback(url = ordered_thumbs, fallback = ICON)
 
         oc.add(TrackObject(
-            url = track.stream_url,
-            title = track.title,
+            url = track['stream_url'],
+            title = track['title'],
             thumb = thumb,
-            duration = int(track.duration)))
+            duration = int(track['duration'])))
 
     # Allow the user to move to the next page...
-    oc.add(DirectoryObject(key = Callback(ProcessRequest, title = title, params = params, offset = offset + 25), title = 'Next...'))
+    if len(request) > 30:
+        oc.add(DirectoryObject(key = Callback(ProcessRequest, title = title, params = params, offset = offset + 25), title = 'Next...'))
 
     return oc
