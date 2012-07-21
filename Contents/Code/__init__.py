@@ -75,8 +75,8 @@ def ProcessRequest(title, params, offset = 0):
         thumb = R(ICON)
         if track['artwork_url'] != None:
             original_thumb = track['artwork_url']
-            ordered_thumbs = [thumb.replace('large', 'original'), 
-                              thumb.replace('large', 't500x500'),
+            ordered_thumbs = [original_thumb.replace('large', 'original'),
+                              original_thumb.replace('large', 't500x500'),
                               original_thumb]
             thumb = Resource.ContentsOfURLWithFallback(url = ordered_thumbs, fallback = ICON)
 
