@@ -1,4 +1,5 @@
 ART = 'art-default.jpg'
+ICON = 'icon-default.png'
 
 CLIENT_ID = "4f6c5882fe9cfc80ebf7ff815cd8b383"
 
