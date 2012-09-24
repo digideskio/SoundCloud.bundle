@@ -1,4 +1,3 @@
-
 NAME = "SoundCloud"
 ART = 'art-default.jpg'
 ICON = 'icon-default.png'
@@ -31,7 +30,7 @@ def Start():
 
 ####################################################################################################
 
-@handler('/music/soundcloud', NAME, art = ART)
+@handler('/music/soundcloud', NAME, thumb = ICON, art = ART)
 def MainMenu():
 
     oc = ObjectContainer(title1 = NAME)
