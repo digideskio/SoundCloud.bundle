@@ -1,4 +1,4 @@
-MUSIC_PREFIX = "/music/soundcloud"
+
 NAME = "SoundCloud"
 ART = 'art-default.jpg'
 ICON = 'icon-default.png'
@@ -17,7 +17,6 @@ TRACKS_URL = 'http://api.soundcloud.com/tracks.json?client_id=%s&filter=streamab
 def Start():
 
     # Initialize the plugin
-    Plugin.AddPrefixHandler(MUSIC_PREFIX, MainMenu, NAME, ICON, ART)
     Plugin.AddViewGroup("List", viewMode = "List", mediaType = "items")
     Plugin.AddViewGroup("InfoList", viewMode = "InfoList", mediaType = "items")
 
@@ -32,6 +31,7 @@ def Start():
 
 ####################################################################################################
 
+@handler('/music/soundcloud', NAME, art = ART)
 def MainMenu():
 
     oc = ObjectContainer(title1 = NAME)
@@ -47,6 +47,7 @@ def Search(query = 'music'):
 
 ####################################################################################################
 
+@route('/music/soundcloud/{title}', params = dict, offset = int, allow_sync = True)
 def ProcessRequest(title, params, offset = 0):
     oc = ObjectContainer(view_group = "InfoList", title2 = title)
 
@@ -87,7 +88,7 @@ def ProcessRequest(title, params, offset = 0):
             duration = int(track['duration'])))
 
     # Allow the user to move to the next page...
-    if len(request) > 30:
-        oc.add(DirectoryObject(key = Callback(ProcessRequest, title = title, params = params, offset = offset + 25), title = 'Next...'))
+    if len(request) == 30:
+        oc.add(NextPageObject(key = Callback(ProcessRequest, title = title, params = params, offset = offset + 25), title = 'Next...'))
 
     return oc
