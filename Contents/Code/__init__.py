@@ -31,7 +31,7 @@ def GroupsSearch(query = '', offset = 0):
     oc = ObjectContainer(title2 = query)
     
     # Construct a suitable user URL request...
-    request_url = GROUPS_URL % (CLIENT_ID, query, offset)
+    request_url = GROUPS_URL % (CLIENT_ID, String.Quote(query, usePlus=True), offset)
     request = JSON.ObjectFromURL(request_url, cacheTime = 0)
 
     if 'errors' in request and len(request['errors'] > 0) and len(request) == 1:
@@ -62,7 +62,7 @@ def UsersSearch(query = '', offset = 0):
     oc = ObjectContainer(title2 = query)
 
     # Construct a suitable user URL request...
-    request_url = USERS_URL % (CLIENT_ID, query, offset)
+    request_url = USERS_URL % (CLIENT_ID, String.Quote(query, usePlus=True), offset)
     request = JSON.ObjectFromURL(request_url, cacheTime = 0)
 
     if 'errors' in request and len(request['errors'] > 0) and len(request) == 1:
@@ -113,7 +113,7 @@ def ProcessRequest(title, params, offset = 0, id = -1, type = "default"):
         # Construct a suitable track URL request...
         request_url = TRACKS_URL % (CLIENT_ID, offset)
         for param, value in params.items():
-            request_url = request_url + ('&%s=%s' % (param, value))
+            request_url = request_url + ('&%s=%s' % (param, String.Quote(value, usePlus=True)))
     elif type == 'user':
         request_url = USERS_TRACKS_URL % (id, CLIENT_ID, offset)
     elif type == 'favs':
