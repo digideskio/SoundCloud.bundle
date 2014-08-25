@@ -9,6 +9,7 @@ FAVORITES_URL = 'http://api.soundcloud.com/users/%s/favorites.json?client_id=%s&
 GROUPS_URL = 'http://api.soundcloud.com/groups.json?client_id=%s&q=%s&offset=%d&limit=30'
 GROUPS_TRACKS_URL = 'http://api.soundcloud.com/groups/%s/tracks.json?client_id=%s&offset=%d&limit=30'
 MY_STREAM_URL = 'https://api.soundcloud.com/me/activities/tracks.json?limit=30&oauth_token=%s'
+MY_TRACKS_URL = 'https://api.soundcloud.com/me/tracks.json?&offset=%d&limit=30&oauth_token=%s'
 
 ####################################################################################################
 def Start():
@@ -46,7 +47,7 @@ def MyAccount():
     if 'loggedIn' in Dict and Dict['loggedIn'] == True:
         oc = ObjectContainer(title2="My Account")
         oc.add(DirectoryObject(key = Callback(MyStream), title='My Stream'))
-        # TODO
+        oc.add(DirectoryObject(key = Callback(ProcessRequest, title = 'My Tracks', params = {'order': 'created_at'}, type = "my-tracks"), title = 'My Tracks'))
         return oc
     else:
         return ObjectContainer(header="Login Failed", message="Please check your username and password")
@@ -84,6 +85,8 @@ def Authenticate():
 
 ####################################################################################################
 def MyStream():
+    if not Dict['loggedIn']:
+        return ObjectContainer(header="Login", message="Enter your username and password in Preferences")
 
     request_url = MY_STREAM_URL % (Dict['access_token'])
     response = JSON.ObjectFromURL(request_url)
@@ -195,6 +198,8 @@ def ProcessRequest(title, params, offset = 0, id = -1, type = "default"):
         request_url = FAVORITES_URL % (id, CLIENT_ID, offset)
     elif type == 'group':
         request_url = GROUPS_TRACKS_URL % (id, CLIENT_ID, offset)
+    elif type == 'my-tracks':
+        request_url = MY_TRACKS_URL % (offset, Dict['access_token'])
 
     request = JSON.ObjectFromURL(request_url, cacheTime = 0)
 
