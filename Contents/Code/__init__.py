@@ -1,5 +1,6 @@
 NAME = "SoundCloud"
-CLIENT_ID = "4f6c5882fe9cfc80ebf7ff815cd8b383"
+CLIENT_ID = "7c2d3445e3bef47d9ddbbe02d859c5f3"
+CLIENT_SECRET = "a2f4e60c71bbcd324c4c7432fe56809d"
 
 TRACKS_URL = 'http://api.soundcloud.com/tracks.json?client_id=%s&filter=streamable&offset=%d&limit=30'
 USERS_URL = 'http://api.soundcloud.com/users.json?client_id=%s&q=%s&offset=%d&limit=30'
@@ -7,22 +8,96 @@ USERS_TRACKS_URL = 'http://api.soundcloud.com/users/%s/tracks.json?client_id=%s&
 FAVORITES_URL = 'http://api.soundcloud.com/users/%s/favorites.json?client_id=%s&offset=%d&limit=30'
 GROUPS_URL = 'http://api.soundcloud.com/groups.json?client_id=%s&q=%s&offset=%d&limit=30'
 GROUPS_TRACKS_URL = 'http://api.soundcloud.com/groups/%s/tracks.json?client_id=%s&offset=%d&limit=30'
+MY_STREAM_URL = 'https://api.soundcloud.com/me/activities/tracks.json?limit=30&oauth_token=%s'
 
 ####################################################################################################
 def Start():
 
     ObjectContainer.title1 = NAME
+    Dict.Reset()
+    Authenticate()
+
+####################################################################################################
+def ValidatePrefs():
+    Authenticate()
 
 ####################################################################################################
 @handler('/music/soundcloud', NAME)
 def MainMenu():
 
-    oc = ObjectContainer()
+    oc = ObjectContainer(no_cache = True)
     oc.add(DirectoryObject(key = Callback(ProcessRequest, title = 'Hot', params = {'order': 'hotness'}), title = 'Hot'))
     oc.add(DirectoryObject(key = Callback(ProcessRequest, title = 'Latest', params = {'order': 'created_at'}), title = 'Latest'))
     oc.add(InputDirectoryObject(key = Callback(Search), title = "Tracks Search...", prompt = "Search for Tracks"))
     oc.add(InputDirectoryObject(key = Callback(UsersSearch), title = "Users Search...", prompt = "Search for Users"))
     oc.add(InputDirectoryObject(key = Callback(GroupsSearch), title = "Groups Search...", prompt = "Search for Groups"))
+    oc.add(PrefsObject(title="Preferences"))
+    oc.add(DirectoryObject(key = Callback(MyAccount), title = "My Account"))
+    return oc
+
+
+####################################################################################################
+def MyAccount():
+    if Prefs['username'] and Prefs['password']:
+        Authenticate()
+    else:
+        return ObjectContainer(header="Login", message="Enter your username and password in Preferences")
+
+    if 'loggedIn' in Dict and Dict['loggedIn'] == True:
+        oc = ObjectContainer(title2="My Account")
+        oc.add(DirectoryObject(key = Callback(MyStream), title='My Stream'))
+        # TODO
+        return oc
+    else:
+        return ObjectContainer(header="Login Failed", message="Please check your username and password")
+
+####################################################################################################
+def Authenticate():
+    Log.Debug("Authenticate")
+    if Prefs['username'] and Prefs['password']:
+        try:
+            #curl --data "grant_type=password&client_id=7c2d3445e3bef47d9ddbbe02d859c5f3&client_secret=a2f4e60c71bbcd324c4c7432fe56809d&username=<USERNAME>&password=<PASSWORD>&scope=non-expiring" https://api.soundcloud.com/oauth2/token
+
+            Log.Debug("Attempting soundcloud authentication")
+            auth = JSON.ObjectFromURL('https://api.soundcloud.com/oauth2/token', values=dict(
+                grant_type='password',
+                client_id=CLIENT_ID,
+                client_secret=CLIENT_SECRET,
+                username=Prefs['username'],
+                password=Prefs['password'],
+                scope='non-expiring'))
+            Dict['loggedIn'] = True
+            Log.Info("Login Successful")
+            Dict['access_token'] = auth['access_token'];
+            return True
+        except Ex.HTTPError, e:
+            Log.Error(e.content)
+            Dict['loggedIn'] = False
+            Log.Error('Login Failed')
+            return False
+        except:
+            Dict['loggedIn'] = False
+            Log.Error('Login Failed')
+            return False
+    else:
+        return False
+
+####################################################################################################
+def MyStream():
+
+    request_url = MY_STREAM_URL % (Dict['access_token'])
+    response = JSON.ObjectFromURL(request_url)
+    next_href = response['next_href']
+    collection = response['collection']
+    
+    oc = ObjectContainer(title2 = 'My Stream')
+    for activity in collection:
+        origin = activity['origin']
+        if not origin['streamable']:
+            continue
+        AddTrack(oc, origin)
+
+    # TODO add next page link
     return oc
 
 ####################################################################################################
@@ -137,24 +212,29 @@ def ProcessRequest(title, params, offset = 0, id = -1, type = "default"):
         if track['streamable'] == False:
             continue
 
-        # Construct a list of thumbnails, in expected size order, largest first
-        thumb = ''
-        if track['artwork_url'] != None:
-            original_thumb = track['artwork_url']
-            ordered_thumbs = [original_thumb.replace('large', 'original'),
-                              original_thumb.replace('large', 't500x500'),
-                              original_thumb]
-            thumb = ordered_thumbs
+        AddTrack(oc, track)
 
-        oc.add(TrackObject(
-            url = track['stream_url'],
-            title = track['title'],
-            thumb = Resource.ContentsOfURLWithFallback(thumb),
-            duration = int(track['duration'])
-        ))
 
     # Allow the user to move to the next page...
     if len(request) == 30:
         oc.add(NextPageObject(key = Callback(ProcessRequest, title = title, params = params, offset = offset + 25, id = id, type = type), title = 'Next...'))
 
     return oc
+
+####################################################################################################
+def AddTrack(oc, track):
+    # Construct a list of thumbnails, in expected size order, largest first
+    thumb = ''
+    if track['artwork_url'] != None:
+        original_thumb = track['artwork_url']
+        ordered_thumbs = [original_thumb.replace('large', 'original'),
+                          original_thumb.replace('large', 't500x500'),
+                          original_thumb]
+        thumb = ordered_thumbs
+
+    oc.add(TrackObject(
+        url = track['stream_url'],
+        title = track['title'],
+        thumb = Resource.ContentsOfURLWithFallback(thumb),
+        duration = int(track['duration'])
+    ))
