@@ -84,11 +84,16 @@ def Authenticate():
         return False
 
 ####################################################################################################
-def MyStream():
+def MyStream(url = ''):
     if not Dict['loggedIn']:
         return ObjectContainer(header="Login", message="Enter your username and password in Preferences")
 
-    request_url = MY_STREAM_URL % (Dict['access_token'])
+    token = (Dict['access_token'])
+    if url == '':
+        request_url = MY_STREAM_URL % token
+    else:
+        request_url = url.replace("/tracks?", "/tracks.json?") + "&oauth_token=" + token
+
     response = JSON.ObjectFromURL(request_url)
     next_href = response['next_href']
     collection = response['collection']
@@ -99,6 +104,9 @@ def MyStream():
         if not origin['streamable']:
             continue
         AddTrack(oc, origin)
+    
+    if next_href:
+        oc.add(NextPageObject(key = Callback(MyStream, url = next_href), title = 'Next...'))
 
     # TODO add next page link
     return oc
