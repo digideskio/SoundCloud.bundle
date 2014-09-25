@@ -112,6 +112,7 @@ def MyStream(url = ''):
     return oc
 
 ####################################################################################################
+@route('/music/soundcloud/search/groups', offset = int, allow_sync = True)
 def GroupsSearch(query = '', offset = 0):
 
     oc = ObjectContainer(title2 = query)
@@ -143,6 +144,7 @@ def GroupsSearch(query = '', offset = 0):
     return oc
 
 ####################################################################################################
+@route('/music/soundcloud/search/users', offset = int, allow_sync = True)
 def UsersSearch(query = '', offset = 0):
 
     oc = ObjectContainer(title2 = query)
@@ -185,6 +187,7 @@ def UserOptions(user):
     return oc
 
 ####################################################################################################
+@route('/music/soundcloud/search', allow_sync = True)
 def Search(query = 'music'):
 
     return ProcessRequest(title = query, params = {'q': query})
