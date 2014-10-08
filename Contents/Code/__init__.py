@@ -10,6 +10,7 @@ GROUPS_URL = 'http://api.soundcloud.com/groups.json?client_id=%s&q=%s&offset=%d&
 GROUPS_TRACKS_URL = 'http://api.soundcloud.com/groups/%s/tracks.json?client_id=%s&offset=%d&limit=30'
 MY_STREAM_URL = 'https://api.soundcloud.com/me/activities/tracks.json?limit=30&oauth_token=%s'
 MY_TRACKS_URL = 'https://api.soundcloud.com/me/tracks.json?&offset=%d&limit=30&oauth_token=%s'
+MY_FAVORITES_URL = 'https://api.soundcloud.com/me/favorites.json?&offset=%d&limit=30&oauth_token=%s'
 
 ####################################################################################################
 def Start():
@@ -48,6 +49,7 @@ def MyAccount():
         oc = ObjectContainer(title2="My Account")
         oc.add(DirectoryObject(key = Callback(MyStream), title='My Stream'))
         oc.add(DirectoryObject(key = Callback(ProcessRequest, title = 'My Tracks', params = {'order': 'created_at'}, type = "my-tracks"), title = 'My Tracks'))
+        oc.add(DirectoryObject(key = Callback(ProcessRequest, title = 'My Favorites', params = {}, type = "my-favs"), title = 'My Favorites'))
         return oc
     else:
         return ObjectContainer(header="Login Failed", message="Please check your username and password")
@@ -211,6 +213,8 @@ def ProcessRequest(title, params, offset = 0, id = -1, type = "default"):
         request_url = GROUPS_TRACKS_URL % (id, CLIENT_ID, offset)
     elif type == 'my-tracks':
         request_url = MY_TRACKS_URL % (offset, Dict['access_token'])
+    elif type == 'my-favs':
+        request_url = MY_FAVORITES_URL % (offset, Dict['access_token'])
 
     request = JSON.ObjectFromURL(request_url, cacheTime = 0)
 
