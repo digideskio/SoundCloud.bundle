@@ -110,7 +110,6 @@ def MyStream(url = ''):
         next_href = response['next_href']
         oc.add(NextPageObject(key = Callback(MyStream, url = next_href), title = 'Next...'))
 
-    # TODO add next page link
     return oc
 
 ####################################################################################################
