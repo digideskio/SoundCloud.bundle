@@ -97,7 +97,6 @@ def MyStream(url = ''):
         request_url = url.replace("/tracks?", "/tracks.json?") + "&oauth_token=" + token
 
     response = JSON.ObjectFromURL(request_url)
-    next_href = response['next_href']
     collection = response['collection']
     
     oc = ObjectContainer(title2 = 'My Stream')
@@ -107,7 +106,8 @@ def MyStream(url = ''):
             continue
         AddTrack(oc, origin)
     
-    if next_href:
+    if 'next_href' in response:
+        next_href = response['next_href']
         oc.add(NextPageObject(key = Callback(MyStream, url = next_href), title = 'Next...'))
 
     # TODO add next page link
