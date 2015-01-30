@@ -247,10 +247,17 @@ def AddTrack(oc, track):
                           original_thumb.replace('large', 't500x500'),
                           original_thumb]
         thumb = ordered_thumbs
+    
+    if track['user'] != None:
+        artist = track['user']['username']
+    else:
+        artist = '[Unknown]'
 
     oc.add(TrackObject(
         url = track['stream_url'],
         title = track['title'],
         thumb = Resource.ContentsOfURLWithFallback(thumb),
-        duration = int(track['duration'])
+        duration = int(track['duration']),
+        artist = artist,
+        source_title = 'SoundCloud'
     ))
