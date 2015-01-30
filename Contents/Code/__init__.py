@@ -39,6 +39,7 @@ def MainMenu():
 
 
 ####################################################################################################
+@route('/music/soundcloud/my-account')
 def MyAccount():
     if Prefs['username'] and Prefs['password']:
         Authenticate()
@@ -86,6 +87,7 @@ def Authenticate():
         return False
 
 ####################################################################################################
+@route('/music/soundcloud/my-stream')
 def MyStream(url = ''):
     if not Dict['loggedIn']:
         return ObjectContainer(header="Login", message="Enter your username and password in Preferences")
@@ -97,7 +99,6 @@ def MyStream(url = ''):
         request_url = url.replace("/tracks?", "/tracks.json?") + "&oauth_token=" + token
 
     response = JSON.ObjectFromURL(request_url)
-    next_href = response['next_href']
     collection = response['collection']
     
     oc = ObjectContainer(title2 = 'My Stream')
@@ -107,10 +108,10 @@ def MyStream(url = ''):
             continue
         AddTrack(oc, origin)
     
-    if next_href:
+    if 'next_href' in response:
+        next_href = response['next_href']
         oc.add(NextPageObject(key = Callback(MyStream, url = next_href), title = 'Next...'))
 
-    # TODO add next page link
     return oc
 
 ####################################################################################################
@@ -179,6 +180,7 @@ def UsersSearch(query = '', offset = 0):
     return oc
 
 ####################################################################################################
+@route('/music/soundcloud/user/{user}')
 def UserOptions(user):
 
     oc = ObjectContainer(title2 = '')
