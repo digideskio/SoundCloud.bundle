@@ -104,7 +104,7 @@ def MyStream(url = ''):
     oc = ObjectContainer(title2 = 'My Stream')
     for activity in collection:
         origin = activity['origin']
-        if not origin['streamable']:
+        if not origin['streamable'] or 'stream_url' not in origin::
             continue
         AddTrack(oc, origin)
     
@@ -231,7 +231,7 @@ def ProcessRequest(title, params, offset = 0, id = -1, type = "default"):
 
         # For some reason, although we've asked for only 'streamable' content, we still sometimes find
         # items which do not have a stream_url. We need to catch these and simply ignore them...
-        if track['streamable'] == False:
+        if track['streamable'] == False or 'stream_url' not in track:
             continue
 
         AddTrack(oc, track)
