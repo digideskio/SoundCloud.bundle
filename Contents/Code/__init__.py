@@ -104,7 +104,7 @@ def MyStream(url = ''):
     oc = ObjectContainer(title2 = 'My Stream')
     for activity in collection:
         origin = activity['origin']
-        if not origin['streamable'] or 'stream_url' not in origin::
+        if not origin['streamable'] or 'stream_url' not in origin:
             continue
         AddTrack(oc, origin)
     
